@@ -8,7 +8,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@types/gif.js": "^0.2.2",
     "@types/lodash": "^4.14.181",
+    "gif.js": "^0.2.0",
     "html2canvas": "^1.4.1",
     "js-beautify": "^1.14.2",
     "lodash": "^4.17.21",
