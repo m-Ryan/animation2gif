@@ -1,11 +1,11 @@
-import { useRef, useState } from "react";
-import { animationToGIF } from "./lib/animationToGIF";
-import "./App.css";
+import { useRef, useState } from 'react';
+import { animationToGIF } from './lib/animationToGIF';
+import './App.css';
 import React from 'react';
-import { dom2Svg , base64ToImage, generateGif} from "./lib";
+import { dom2Svg, urlToImage, generateGif } from './lib';
 
 function App() {
-  const [url, setUrl] = useState<string>("");
+  const [url, setUrl] = useState<string>('');
 
   const onChange = (u: string) => {
     setUrl(u);
@@ -13,7 +13,7 @@ function App() {
 
   return (
     <div style={{ paddingTop: 100, paddingLeft: 100 }}>
-      <div style={{ display: "flex" }}>
+      <div style={{ display: 'flex' }}>
         <div style={{ marginRight: 30 }}>
           <TransformDemo onChange={onChange} />
         </div>
@@ -27,7 +27,7 @@ function App() {
   );
 }
 
-function TransformDemo({ onChange }: { onChange: (value: string) => void; }) {
+function TransformDemo({ onChange }: { onChange: (value: string) => void }) {
   const ref = useRef<HTMLDivElement | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -35,33 +35,35 @@ function TransformDemo({ onChange }: { onChange: (value: string) => void; }) {
     const container = ref.current;
     if (!container) return;
     setLoading(true);
-   
-    const count = 60;
+
+    const arr = [
+      'https://img14.360buyimg.com/n0/jfs/t1/192574/40/16263/485972/6107c93aE88ce7e93/bc1454f156e61432.png',
+      'https://img14.360buyimg.com/n1/s546x546_jfs/t1/183840/13/17326/419956/6107c931E5d21808b/ea073fc4e9eb5311.png',
+      'https://img14.360buyimg.com/n1/s546x546_jfs/t1/197241/22/3624/533264/611b505eEed189075/fce6864e6e7b4f05.png',
+    ];
+
     const blobList = [];
-    for (let i = 0; i < count; i++) {
-      const img =  await base64ToImage(dom2Svg(
-        container,
-        {
+    for (let i = 0; i < arr.length; i++) {
+      const img = await urlToImage(
+       await dom2Svg(container, {
           overwrite: [
             {
-              selector: ".scaleText",
-              style: {
-                color:'red'
+              selector: '.logo',
+              attrs: {
+                src:arr[i],
               },
-              innerText: `text: ${i}`
-            }
-          ]
-        }
-      ));
+            },
+          ],
+        })
+      );
       blobList.push(img);
     }
 
     const gifBlob = await generateGif({
       images: blobList,
       perFrameTime: 1000,
-    })
+    });
 
-   
     const url = URL.createObjectURL(gifBlob);
     onChange(url);
     setLoading(false);
@@ -69,15 +71,15 @@ function TransformDemo({ onChange }: { onChange: (value: string) => void; }) {
 
   return (
     <div>
-      <div ref={ref} onClick={onTestAnimation} className="App-header ">
-        <h1 className="scaleText">Awesome GIF</h1>
+      <div ref={ref} onClick={onTestAnimation} className='App-header '>
         <img
-          crossOrigin="anonymous"
-          src={
-            "https://easy-email-m-ryan.vercel.app/images/06ca521d-9728-4de6-a709-1b75a828bfc3-2a9b1224-3d71-43b8-b52f-e7cdcdc9107b.png"
-          }
+          width={300}
           className="logo"
-          alt="logo"
+          crossOrigin='anonymous'
+          src={
+            'https://img14.360buyimg.com/n0/jfs/t1/192574/40/16263/485972/6107c93aE88ce7e93/bc1454f156e61432.png'
+          }
+          alt='logo'
         />
       </div>
       {loading && <div>loading...</div>}
@@ -85,28 +87,27 @@ function TransformDemo({ onChange }: { onChange: (value: string) => void; }) {
   );
 }
 
-function TypingDemo({ onChange }: { onChange: (value: string) => void; }) {
-
+function TypingDemo({ onChange }: { onChange: (value: string) => void }) {
   const ref = useRef<HTMLDivElement | null>(null);
   const [loading, setLoading] = useState(false);
   const text = 'Typing effect for text';
   const onTestAnimation = async () => {
     const container = ref.current;
     if (!container) return;
-    const ele = container.querySelector(".typing-effect") as HTMLElement;
+    const ele = container.querySelector('.typing-effect') as HTMLElement;
     if (!ele) return;
     setLoading(true);
     const totalTime = 2000;
     const gifBlob = await animationToGIF(
       [
         {
-          selector: ".typing-effect",
+          selector: '.typing-effect',
           keyframes: [
             {
-              width: 0
+              width: 0,
             },
             {
-              width: `${text.length}ch`
+              width: `${text.length}ch`,
             },
           ],
           options: {
@@ -115,19 +116,19 @@ function TypingDemo({ onChange }: { onChange: (value: string) => void; }) {
           },
         },
         {
-          selector: ".typing-effect",
+          selector: '.typing-effect',
           keyframes: [
             {
               borderColor: '#000',
-              offset: 0
+              offset: 0,
             },
             {
               borderColor: 'transparent',
-              offset: 0.5
+              offset: 0.5,
             },
             {
               borderColor: '#000',
-              offset: 1
+              offset: 1,
             },
           ],
           options: {
@@ -157,19 +158,19 @@ function TypingDemo({ onChange }: { onChange: (value: string) => void; }) {
         ref={ref}
         style={{
           height: 100,
-          display: "flex",
+          display: 'flex',
           fontFamily: 'monospace',
-          alignItems: "center",
-          justifyContent: "center",
-          backgroundColor: '#fff'
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: '#fff',
         }}
       >
         <div
-          className="typing-effect"
+          className='typing-effect'
           style={{
-            whiteSpace: "nowrap",
-            overflow: "hidden",
-            fontSize: "2em",
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            fontSize: '2em',
             width: `${text.length}ch`,
             borderRight: '3px solid #000',
           }}
@@ -181,6 +182,5 @@ function TypingDemo({ onChange }: { onChange: (value: string) => void; }) {
     </div>
   );
 }
-
 
 export default App;

@@ -26,9 +26,9 @@ export async function animationToGIF(list: AnimationItem[], options: AnimationTo
   const container = sourceContainer.cloneNode(true) as HTMLElement;
 
   const hideContainer = document.createElement('div');
-  hideContainer.style.width = '0px';
-  hideContainer.style.height = '0px';
-  hideContainer.style.overflow = 'hidden';
+  // hideContainer.style.width = '0px';
+  // hideContainer.style.height = '0px';
+  // hideContainer.style.overflow = 'hidden';
 
   const wrapper = document.createElement('div');
   wrapper.style.width = containerWidth + 'px';
@@ -50,11 +50,11 @@ export async function animationToGIF(list: AnimationItem[], options: AnimationTo
 
   const framesImages: string[] = [];
 
-  new Array(totalTime / perFrameTime).fill(0).forEach((_, index) => {
+  new Array(totalTime / perFrameTime).fill(0).map(async (_, index) => {
     animationList.forEach(animation => {
       animation.currentTime = perFrameTime * index;
     });
-    const html = dom2Svg(container, {
+    const html = await dom2Svg(container, {
       width: containerWidth,
       height: containerHeight
     });

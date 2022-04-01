@@ -4,17 +4,16 @@ import { flatMap } from 'lodash';
 const canvas = document.createElement('canvas');
 const context = canvas.getContext('2d')!;
 
-
-export const base64ToImage = async  (base64:string)=> {
+export const urlToImage = async (base64: string) => {
   const img = new Image();
   img.src = base64;
-  await new Promise(resolve=>img.onload =resolve)
+  await new Promise((resolve) => (img.onload = resolve));
   return img;
 };
 
-export const base64ToBlob = async  (base64:string)=> {
-  const img = await base64ToImage(base64);
- 
+export const base64ToBlob = async (base64: string) => {
+  const img = await urlToImage(base64);
+
   const width = img.width;
   const height = img.height;
   // canvas绘制
@@ -27,20 +26,28 @@ export const base64ToBlob = async  (base64:string)=> {
   return canvas.toDataURL();
 };
 
-export const img2Base64 =  (img: InstanceType<typeof Image>)=> {
-  const width = img.width;
-  const height = img.height;
-  // canvas绘制
-  canvas.width = width;
-  canvas.height = height;
-  // 画布清除
-  context.clearRect(0, 0, width, height);
-  // 绘制图片到canvas
-  context.drawImage(img, 0, 0);
-  return canvas.toDataURL();
+export const img2Base64 = async (source: InstanceType<typeof Image>):Promise<string> => {
+  const img = new Image();
+  img.crossOrigin='anonymous'
+    return new Promise((resolve) => {
+      img.onload = ()=> {
+       console.log('img', img.width, img.height)
+        const width = img.width;
+        const height = img.height;
+        // canvas绘制
+        canvas.width = width;
+        canvas.height = height;
+        // 画布清除
+        context.clearRect(0, 0, width, height);
+        // 绘制图片到canvas
+        context.drawImage(img, 0, 0);
+        resolve(canvas.toDataURL());
+      }
+      img.src = source.src;
+    });
 };
 
-export const img2Blob =  (img: HTMLImageElement):Promise<Blob>=>{
+export const img2Blob = (img: HTMLImageElement): Promise<Blob> => {
   return new Promise((resolve) => {
     const width = img.width;
     const height = img.height;
@@ -110,13 +117,14 @@ interface Dom2SvgOptions {
   overwrite?: [
     {
       selector: Parameters<Document['querySelector']>[0] | '';
-      style: React.CSSProperties;
+      style?: React.CSSProperties;
       innerText?: string;
       innerHTML?: string;
+      attrs?: Record<string, string>;
     }
   ];
 }
-export const dom2Svg = function (
+export const dom2Svg = async function (
   dom: HTMLElement,
   option: Dom2SvgOptions = {}
 ) {
@@ -128,12 +136,7 @@ export const dom2Svg = function (
   cloneDom.setAttribute('xmlns', 'http://www.w3.org/1999/xhtml');
   cloneDom.classList.remove('outline');
 
-  cloneDom.querySelectorAll('img').forEach((item) => {
-    item.src = img2Base64(item);
-  });
-
   overwrite.forEach((item) => {
-
     if (item.selector === '') {
       if (item instanceof HTMLElement) {
         const style = item.style;
@@ -141,30 +144,48 @@ export const dom2Svg = function (
           style.setProperty(key, item.style[key as any]);
         });
         if (item.innerText) {
-          item.innerText = item.innerText;
+          cloneDom.innerText = item.innerText;
         }
         if (item.innerHTML) {
-          item.innerHTML = item.innerHTML;
+          cloneDom.innerHTML = item.innerHTML;
+        }
+        if (item.attrs) {
+          Object.keys(item.attrs).forEach((key) => {
+            cloneDom.setAttribute(key, item.attrs![key]);
+          });
         }
       }
     }
 
     cloneDom.querySelectorAll(item.selector).forEach((node) => {
-     
       if (node instanceof HTMLElement) {
+
         const style = node.style;
-        Object.keys(item.style).forEach((key) => {
-          style.setProperty(key, (item.style as any)[key]);
-        });
+        if (item.style) {
+          Object.keys(item.style).forEach((key) => {
+            style.setProperty(key, (item.style as any)[key]);
+          });
+        }
+
         if (item.innerText) {
           node.innerText = item.innerText;
         }
         if (item.innerHTML) {
           node.innerHTML = item.innerHTML;
         }
+        if (item.attrs) {
+          for(const key in item.attrs) {
+            node.setAttribute(key, item.attrs![key]);
+          }
+        }
       }
     });
   });
+
+
+  await Promise.all([...cloneDom.querySelectorAll('img')].map(async(item) => {
+    item.src = await img2Base64(item);
+  }))
 
   let htmlSvg =
     'data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg" width="' +

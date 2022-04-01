@@ -10,6 +10,7 @@ export const generateGif = (options: GenerateGifOptions): Promise<Blob> => {
   const { perFrameTime = 1000 / 24, gif: gifOption, images } = options;
 
   const framesOption: { frame: HTMLImageElement, delay: number; }[] = [];
+
   images.forEach(item => {
     const last = framesOption[framesOption.length - 1];
     const imgEqual = last && last.frame.src === item.src && last.frame.width == item.width && last.frame.height === item.height;
