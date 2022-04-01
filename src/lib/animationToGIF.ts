@@ -1,5 +1,5 @@
-import { dom2Svg } from "./dom2Svg";
-import { generateGif } from "./generateGif";
+import { dom2Svg } from './dom2Svg';
+import { generateGif } from './generateGif';
 
 interface AnimationToGIFOption {
   totalTime: number;
@@ -14,14 +14,12 @@ interface AnimationItem {
   selector: Parameters<Document['querySelector']>[0];
 }
 
-
 export async function animationToGIF(list: AnimationItem[], options: AnimationToGIFOption): Promise<Blob> {
   const { totalTime, container: sourceContainer, frames = 24, debug = false } = options;
   if (debug) {
     console.time('generate frame');
   }
   const perFrameTime = 1000 / frames;
-
   const containerWidth = sourceContainer.offsetWidth;
   const containerHeight = sourceContainer.offsetHeight;
 
@@ -55,12 +53,12 @@ export async function animationToGIF(list: AnimationItem[], options: AnimationTo
   new Array(totalTime / perFrameTime).fill(0).forEach((_, index) => {
     animationList.forEach(animation => {
       animation.currentTime = perFrameTime * index;
-      const html = dom2Svg(container, {
-        width: containerWidth,
-        height: containerHeight
-      });
-      framesImages.push(html);
     });
+    const html = dom2Svg(container, {
+      width: containerWidth,
+      height: containerHeight
+    });
+    framesImages.push(html);
   });
 
   if (debug) {
@@ -69,8 +67,8 @@ export async function animationToGIF(list: AnimationItem[], options: AnimationTo
   if (debug) {
     console.time('generate GIF');
     console.log(framesImages);
-
   }
+
   const imageList = await Promise.all(
     framesImages.map(svg => {
       return new Promise<InstanceType<typeof Image>>(resolve => {
@@ -84,7 +82,6 @@ export async function animationToGIF(list: AnimationItem[], options: AnimationTo
         img.src = svg;
       });
     }));
-
 
   const blob = await generateGif({
     images: imageList,

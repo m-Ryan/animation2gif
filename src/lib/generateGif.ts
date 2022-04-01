@@ -8,6 +8,23 @@ export interface GenerateGifOptions {
 }
 export const generateGif = (options: GenerateGifOptions): Promise<Blob> => {
   const { perFrameTime = 1000 / 24, gif: gifOption, images } = options;
+
+  const framesOption: { frame: HTMLImageElement, delay: number; }[] = [];
+  images.forEach(item => {
+    const last = framesOption[framesOption.length - 1];
+    const imgEqual = last && last.frame.src === item.src && last.frame.width == item.width && last.frame.height === item.height;
+
+    if (!last || !imgEqual) {
+      framesOption.push({
+        frame: item,
+        delay: perFrameTime
+      });
+    } else {
+
+      last.delay += perFrameTime;
+    }
+  });
+
   return new Promise(resolve => {
 
     const gif = new GIF({
@@ -17,9 +34,9 @@ export const generateGif = (options: GenerateGifOptions): Promise<Blob> => {
       ...gifOption
     });
 
-    images.forEach(frame => {
-      gif.addFrame(frame, {
-        delay: perFrameTime
+    framesOption.forEach(item => {
+      gif.addFrame(item.frame, {
+        delay: item.delay
       });
     });
 

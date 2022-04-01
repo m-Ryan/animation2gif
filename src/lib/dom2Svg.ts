@@ -1,4 +1,4 @@
-import { flatMap } from "lodash";
+import { flatMap } from 'lodash';
 
 // canvas绘制图片元素方法
 const canvas = document.createElement('canvas');
@@ -15,7 +15,6 @@ const img2Base64 = function (img: InstanceType<typeof Image>) {
   context.drawImage(img, 0, 0);
   return canvas.toDataURL();
 };
-
 
 const haveDirectionProperties = flatMap([
   'padding',
@@ -43,6 +42,7 @@ const validKeys = [
   'box-sizing',
   'opacity',
   'visibility',
+  'textTransform',
   ...haveDirectionProperties
 ];
 
@@ -56,13 +56,11 @@ function cloneNodeWithInlineStyle(node: ChildNode) {
     clone.style.setProperty(key, style.getPropertyValue(key));
   });
 
-
   clone.childNodes.forEach((child, i) => {
     clone.replaceChild(cloneNodeWithInlineStyle(node.childNodes[i]), child);
   });
   return clone;
 }
-
 
 export const dom2Svg = function (dom: HTMLElement, option: {
   width?: number;
@@ -79,7 +77,6 @@ export const dom2Svg = function (dom: HTMLElement, option: {
   cloneDom.querySelectorAll('img').forEach(item => {
     item.src = img2Base64(item);
   });
-
 
   let htmlSvg = 'data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg" width="' + width + '" height="' + height + '"><foreignObject x="0" y="0" width="100%" height="100%">' +
     new XMLSerializer().serializeToString(cloneDom) +
