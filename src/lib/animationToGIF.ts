@@ -1,4 +1,4 @@
-import { dom2Svg } from './dom2Svg';
+import { dom2Svg,img2Blob } from './dom2Svg';
 import { generateGif } from './generateGif';
 
 interface AnimationToGIFOption {
@@ -69,7 +69,7 @@ export async function animationToGIF(list: AnimationItem[], options: AnimationTo
     console.log(framesImages);
   }
 
-  const imageList = await Promise.all(
+  const imageList:HTMLImageElement[] = await Promise.all(
     framesImages.map(svg => {
       return new Promise<InstanceType<typeof Image>>(resolve => {
         const img = new Image();
@@ -82,6 +82,10 @@ export async function animationToGIF(list: AnimationItem[], options: AnimationTo
         img.src = svg;
       });
     }));
+
+  if (imageList.length === 1) {
+    return img2Blob(imageList[0]);
+  }
 
   const blob = await generateGif({
     images: imageList,
