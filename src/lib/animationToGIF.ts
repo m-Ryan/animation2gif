@@ -1,4 +1,4 @@
-import { dom2Svg,img2Blob } from './dom2Svg';
+import { dom2Svg, img2Blob } from './dom2Svg';
 import { generateGif } from './generateGif';
 
 interface AnimationToGIFOption {
@@ -26,9 +26,9 @@ export async function animationToGIF(list: AnimationItem[], options: AnimationTo
   const container = sourceContainer.cloneNode(true) as HTMLElement;
 
   const hideContainer = document.createElement('div');
-  // hideContainer.style.width = '0px';
-  // hideContainer.style.height = '0px';
-  // hideContainer.style.overflow = 'hidden';
+  hideContainer.style.width = '0px';
+  hideContainer.style.height = '0px';
+  hideContainer.style.overflow = 'hidden';
 
   const wrapper = document.createElement('div');
   wrapper.style.width = containerWidth + 'px';
@@ -69,7 +69,7 @@ export async function animationToGIF(list: AnimationItem[], options: AnimationTo
     console.log(framesImages);
   }
 
-  const imageList:HTMLImageElement[] = await Promise.all(
+  const imageList: HTMLImageElement[] = await Promise.all(
     framesImages.map(svg => {
       return new Promise<InstanceType<typeof Image>>(resolve => {
         const img = new Image();

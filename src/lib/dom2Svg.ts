@@ -4,10 +4,14 @@ import { flatMap } from 'lodash';
 const canvas = document.createElement('canvas');
 const context = canvas.getContext('2d')!;
 
-export const urlToImage = async (base64: string) => {
+export const urlToImage = async (url: string) => {
   const img = new Image();
-  img.src = base64;
-  await new Promise((resolve) => (img.onload = resolve));
+  img.src = url;
+
+  await new Promise((resolve, reject) => {
+    img.onload = resolve;
+    img.onerror = reject;
+  });
   return img;
 };
 
@@ -26,25 +30,25 @@ export const base64ToBlob = async (base64: string) => {
   return canvas.toDataURL();
 };
 
-export const img2Base64 = async (source: InstanceType<typeof Image>):Promise<string> => {
+export const img2Base64 = async (source: InstanceType<typeof Image>): Promise<string> => {
   const img = new Image();
-  img.crossOrigin='anonymous'
-    return new Promise((resolve) => {
-      img.onload = ()=> {
-       console.log('img', img.width, img.height)
-        const width = img.width;
-        const height = img.height;
-        // canvas绘制
-        canvas.width = width;
-        canvas.height = height;
-        // 画布清除
-        context.clearRect(0, 0, width, height);
-        // 绘制图片到canvas
-        context.drawImage(img, 0, 0);
-        resolve(canvas.toDataURL());
-      }
-      img.src = source.src;
-    });
+  img.crossOrigin = 'anonymous';
+  return new Promise((resolve, reject) => {
+    img.onload = () => {
+      const width = img.width;
+      const height = img.height;
+      // canvas绘制
+      canvas.width = width;
+      canvas.height = height;
+      // 画布清除
+      context.clearRect(0, 0, width, height);
+      // 绘制图片到canvas
+      context.drawImage(img, 0, 0);
+      resolve(canvas.toDataURL());
+    };
+    img.onerror = reject;
+    img.src = source.src;
+  });
 };
 
 export const img2Blob = (img: HTMLImageElement): Promise<Blob> => {
@@ -81,6 +85,7 @@ const validKeys = [
   'background-color',
   'transform',
   'display',
+  'font-family',
   'font-size',
   'line-height',
   'flex-direction',
@@ -114,15 +119,13 @@ function cloneNodeWithInlineStyle(node: ChildNode) {
 interface Dom2SvgOptions {
   width?: number;
   height?: number;
-  overwrite?: [
-    {
-      selector: Parameters<Document['querySelector']>[0] | '';
-      style?: React.CSSProperties;
-      innerText?: string;
-      innerHTML?: string;
-      attrs?: Record<string, string>;
-    }
-  ];
+  overwrite?: Array<{
+    selector: Parameters<Document['querySelector']>[0] | '';
+    style?: React.CSSProperties;
+    innerText?: string;
+    innerHTML?: string;
+    attrs?: Record<string, string>;
+  }>;
 }
 export const dom2Svg = async function (
   dom: HTMLElement,
@@ -174,18 +177,17 @@ export const dom2Svg = async function (
           node.innerHTML = item.innerHTML;
         }
         if (item.attrs) {
-          for(const key in item.attrs) {
-            node.setAttribute(key, item.attrs![key]);
+          for (const key in item.attrs) {
+            node.setAttribute(key, item.attrs[key]);
           }
         }
       }
     });
   });
 
-
-  await Promise.all([...cloneDom.querySelectorAll('img')].map(async(item) => {
+  await Promise.all([...cloneDom.querySelectorAll('img')].map(async (item) => {
     item.src = await img2Base64(item);
-  }))
+  }));
 
   let htmlSvg =
     'data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg" width="' +
